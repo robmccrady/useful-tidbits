@@ -42,7 +42,9 @@ This all sounds great!  Why doesn't everybody do this???  In return for the impr
 
 ## Guidelines and Constraints  
 
-When using messaging, it's helpful to think about your system's messages as being one of two kinds:  **Commands** and **Events**.  There are some helpful rules and constraints to use when you're dealing with each kind of message.  
+When using messaging, it's helpful to think about your system's messages as being one of two kinds:  **Commands** and **Events**.  When using messages, your component will have one or both of the following roles:  **Publisher** and/or **Subscriber**.  Publishers send messages out into the broader system context, and Subscribers receive and process the various messages that they care about.
+
+There are some helpful rules and constraints to use when you're dealing with each kind of message.  
 
 ### General Considerations
  - **_Think this stuff through_**, and make diagrams **before diving into code**.  Future You, and your collaborators will thank you.
@@ -68,3 +70,105 @@ An event is a message that can be subscribed to by any number of components.  Th
 
 **Pub/Sub Ratio:**  1:0-N  
 > **_Specific events should be published by one and only one component of your system._**
+
+## And now, to Code!
+We're going to discuss these at a more conceptual level here.  _I'll add C# code that illustrates the concepts to the /src folder._ 
+
+Because every system is different, both in terms of which message exchange backend you choose and in the messages that get exchanged between system components, we're going to deal in abstractions here.  That is, we're going to cover the DESCRIPTIONS of the base required behaviors, and the BARE MINIMUM attributes of the Message types.  The following code-level entities describe the behaviors and attributes that I've encountered every time I've built a message based system.
+
+First, the behavioral side of things:  
+
+---
+### IPublisher  
+#### Purpose:  _Responsible for pushing a message into a named structure on the messaging backend._
+
+#### Notes to implementers  
+Implement this object against a specific Messaging backend such as RabbitMQ, Azure EventGrid, Azure EventHub, and a multitude of other solutions from a large number of vendors.  Components that USE this concept can send messages to subscribers that are connected to the same backend.
+
+#### Methods:
+| Method | Purpose |
+| - | - |
+| [SendCommandAsync](#sendcommand) | Accepts a CommandMessage instance and pushes it onto the route configured on the messaging backend |
+| [BroadcastEventAsync](#broadcastevent) | Accepts an EventMessage instance and pushes it onto the route configured on the messaging backend. |
+
+#### SendCommandAsync
+##### Definition  
+```csharp
+Task SendCommandAsync(CommandMessageBase command)
+```
+##### Remarks
+Accepts an instance of a CommandMessageBase sub-type and places it on the backend structure(route) that's been designated for that particular Command type. 
+
+#### BroadcastEventAsync
+##### Definition  
+```csharp
+Task BroadcastEventAsync(EventMessageBase event)
+```
+Accepts an instance of an EventMessageBase sub-type and places it on the backend structure(route) that has been pre-configured for that particular event.  
+
+---
+### ISubscriber  
+#### Purpose:  _Responsible for receiving messages from specific routes on the messaging backend and forwarding those messages to registered handlers._  
+
+_When a message is processed, the Subscriber is responsible for the disposition of the message within the backend service._
+
+#### Notes to implementers  
+Implement this object against a specific Messaging backend.  Components that USE this concept register methods to receive Command or Event types from the subscriber and take action as these messages arrive.  
+
+It is the responsibility of each method that implements a MessageHandler to respond back to the Subscriber with an instruction for how to dispose of the particular message.
+
+#### Methods:
+| Method | Purpose |
+| - | - |
+| [RegisterHandler](#registerhandler) | Accepts the "name" of a Command or Event and a reference to a delegate method that has been created to process the incoming message. |
+| [StartListening](#startlistening) | Tells the Subscriber component to start receiving and forwarding messages on its configured channels. |
+| [StopListening](#stoplistening) | Tells the Subscriber component to stop receiving and forwarding messages. |  
+
+#### RegisterHandler  
+##### Definition  
+```csharp
+void RegisterHandler<TMessage>(Func<Task<DispositionKind>, TMessage> handler)
+```
+This method configures the routing rule for the type of message described by the generic TMessage parameter.  A subscriber will receive a message from the messaging backend in some format and must likely decode and deserialize it into a concrete subclass of either Message type.  The resulting instance is then passed to the provided handler function.  
+
+When the function completes, the subscriber will receive the DispositionKind back, which instructs the subscriber component on how to deal with the message itself.  
+
+_Each Messaging Backend will have its own idiocyncracies around this process.  Consult the documentation for whichever backend you select._
+
+#### StartListening  
+##### Definition  
+```csharp
+void StartListeningAsync(CancellationToken? cancelToken)
+```
+Accepts an instance of an EventMessageBase sub-type and places it on the backend structure(route) that has been pre-configured for that particular event.  
+
+#### StopListening  
+##### Definition  
+```csharp
+void StopListeningAsync()
+```
+Accepts an instance of an EventMessageBase sub-type and places it on the backend structure(route) that has been pre-configured for that particular event.  
+
+---
+### IConnection  
+
+Next, the Data Contracts:
+
+### DispositionKind
+An enum that describes how a message should be dealt with by the subscriber after a the handler has tried to process it.
+```csharp
+public enum DispositionKind
+{
+  Acknowledge,  // The message was processed successfully and can be removed from the backend.
+  Requeue,      // The message was not handled successfully because of a temporary condition in the handler.  Put the message back on its configured channel.
+  DeadLetter    // The message will never be handled successfully due to either a fault in the message itself or an unrecoverable condition in the handler's services.
+}
+```
+
+### RouteConfigurationBase
+
+### MessageBase
+
+### EventMessageBase  
+
+### CommandMessageBase  
