@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "messaging", "messaging", "{C64B4B0F-87E2-47B5-90A6-5E887CDE659E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C0E5C59F-B6D3-442D-AF63-B4AE230B166C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyFx.Messaging.Core", "messaging\src\MyFx.Messaging.Core\MyFx.Messaging.Core.csproj", "{5741D653-7342-4E13-ABD4-3FA00EB28F41}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5741D653-7342-4E13-ABD4-3FA00EB28F41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5741D653-7342-4E13-ABD4-3FA00EB28F41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5741D653-7342-4E13-ABD4-3FA00EB28F41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5741D653-7342-4E13-ABD4-3FA00EB28F41}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C0E5C59F-B6D3-442D-AF63-B4AE230B166C} = {C64B4B0F-87E2-47B5-90A6-5E887CDE659E}
+		{5741D653-7342-4E13-ABD4-3FA00EB28F41} = {C0E5C59F-B6D3-442D-AF63-B4AE230B166C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EB9989F7-810F-4A06-8ABA-70CC4E14F7D4}
+	EndGlobalSection
+EndGlobal
